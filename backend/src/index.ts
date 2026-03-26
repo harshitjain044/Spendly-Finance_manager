@@ -18,6 +18,10 @@ import analyticsRoutes from "./routes/analytics.route";
 
 const app = express();
 const BASE_PATH = Env.BASE_PATH;
+const PORT = process.env.PORT || Env.PORT || 5000;
+const allowedOrigins = Env.FRONTEND_ORIGIN.split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,7 +30,7 @@ app.use(passport.initialize());
 
 app.use(
   cors({
-    origin: Env.FRONTEND_ORIGIN,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -57,12 +61,12 @@ app.use(`${BASE_PATH}/analytics`, passportAuthenticateJwt, analyticsRoutes);
 
 app.use(errorHandler);
 
-app.listen(Env.PORT, async () => {
+app.listen(PORT, async () => {
   await connctDatabase();
 
   if (Env.ENABLE_CRONS) {
     await initializeCrons();
   }
 
-  console.log(`Server is running on port ${Env.PORT} in ${Env.NODE_ENV} mode`);
+  console.log(`Server is running on port ${PORT} in ${Env.NODE_ENV} mode`);
 });
