@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { createUserContent } from "@google/genai";
+import { z } from "zod";
 import ReportSettingModel from "../models/report-setting.model";
 import ReportModel from "../models/report.model";
 import TransactionModel, {
@@ -12,6 +13,8 @@ import { convertToMajorUnit } from "../utils/format-currency";
 import { genAI, genAIModel } from "../config/google-ai.config";
 import { reportInsightPrompt } from "../utils/prompt";
 import { formatDateInIndia } from "../utils/locale";
+
+const aiInsightsSchema = z.array(z.string()).length(3);
 
 export const getAllReportsService = async (
   userId: string,
@@ -249,7 +252,7 @@ async function generateInsightsAI({
 
     if (!cleanedText) return [];
 
-    return JSON.parse(cleanedText);
+    return aiInsightsSchema.parse(JSON.parse(cleanedText));
   } catch (error) {
     return [];
   }

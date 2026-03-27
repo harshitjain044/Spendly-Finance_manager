@@ -1,8 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { Env } from "./env.config";
-import multer, { FileFilterCallback } from "multer"; // <-- Imported FileFilterCallback
-import { Request } from "express"; // <-- Imported Request
+import multer, { FileFilterCallback } from "multer";
+import { Request } from "express";
 
 cloudinary.config({
   cloud_name: Env.CLOUDINARY_CLOUD_NAME,
@@ -19,20 +19,18 @@ const STORAGE_PARAMS = {
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  // <-- Added types to params just to be safe
-  params: (req: Request, file: Express.Multer.File) => ({ 
+  params: (_req: Request, _file: Express.Multer.File) => ({
     ...STORAGE_PARAMS,
   }),
 });
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
-  // <-- Explicitly typed _, file, and cb
-  fileFilter: (_: Request, file: Express.Multer.File, cb: FileFilterCallback) => { 
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter: (_: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
     const isValid = /^image\/(jpe?g|png)$/.test(file.mimetype);
     if (!isValid) {
-      return cb(null, false); // <-- Fixed: Call cb() so the request doesn't hang!
+      return cb(null, false);
     }
 
     cb(null, true);

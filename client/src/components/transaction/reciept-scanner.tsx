@@ -66,12 +66,20 @@ const ReceiptScanner = ({
       aiScanReceipt(formData)
         .unwrap()
         .then((res) => {
+          if (!res?.data?.amount || !res?.data?.date) {
+            throw new Error("Receipt scan returned incomplete data");
+          }
           updateProgress(100);
           onScanComplete(res.data);
           toast.success("Receipt scanned successfully");
         })
         .catch((error) => {
-          toast.error(error.data?.message || "Failed to scan receipt");
+          toast.error(
+            error?.data?.message ||
+              error?.message ||
+              "Failed to scan receipt"
+          );
+          event.target.value = "";
         })
         .finally(() => {
           clearInterval(interval);

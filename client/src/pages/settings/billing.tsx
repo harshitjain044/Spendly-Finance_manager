@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,15 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import { CalendarClock, ShieldCheck, Sparkles } from "lucide-react";
 
 const Billing = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">Billing</h3>
+        <h3 className="text-lg font-medium">Billing & subscriptions</h3>
         <p className="text-sm text-muted-foreground">
-          Manage your plan, invoices, and future premium features.
+          Spendly is currently free to use. Billing tools will be introduced in a future version.
         </p>
       </div>
       <Separator />
@@ -25,11 +24,11 @@ const Billing = () => {
         <Card className="border-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm">
           <CardHeader className="space-y-3">
             <Badge className="w-fit border-white/20 bg-white/15 text-white hover:bg-white/15">
-              Current plan
+              Current access
             </Badge>
-            <CardTitle className="text-2xl">Spendly Free</CardTitle>
+            <CardTitle className="text-2xl">Free to use today</CardTitle>
             <CardDescription className="text-emerald-50">
-              Built for day-to-day money tracking with a clean dashboard, reports, and imports.
+              Spendly is focused on helping you track spending, review trends, and stay organized without paywalls in the current release.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -37,24 +36,24 @@ const Billing = () => {
               <div className="rounded-xl bg-white/10 p-4">
                 <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                   <ShieldCheck className="size-4" />
-                  Included now
+                  Available now
                 </div>
                 <p className="text-sm text-emerald-50">
-                  Analytics dashboard, recurring transactions, CSV import, and scheduled reports.
+                  Budget tracking, recurring transactions, imports, and reporting remain available in the free experience.
                 </p>
               </div>
               <div className="rounded-xl bg-white/10 p-4">
                 <div className="mb-2 flex items-center gap-2 text-sm font-medium">
                   <Sparkles className="size-4" />
-                  Ready to expand
+                  On the roadmap
                 </div>
                 <p className="text-sm text-emerald-50">
-                  This screen can later show renewals, invoices, and subscription controls once payments are added.
+                  Billing, subscriptions, and account management tools will appear here once they are part of a future release.
                 </p>
               </div>
             </div>
             <p className="text-sm text-emerald-50">
-              Replacing the original upsell content here makes the product feel owned, credible, and launch-ready.
+              This page is reserved for future account billing controls, but there is nothing to manage yet.
             </p>
           </CardContent>
         </Card>
@@ -62,20 +61,23 @@ const Billing = () => {
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <CreditCard className="size-4 text-emerald-600" />
-              Billing status
+              <CalendarClock className="size-4 text-emerald-600" />
+              Coming soon
             </CardTitle>
             <CardDescription>
-              Payments are not enabled in this build yet.
+              A dedicated billing workspace will be added when Spendly introduces subscriptions.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
-              Connect Stripe or another provider when you are ready to support subscriptions or invoice history.
+              For now, your account has full access to the current product experience at no cost.
             </div>
-            <Button className="w-full" disabled>
-              Upgrade Coming Soon
-            </Button>
+            <div className="rounded-lg border border-dashed bg-background p-4">
+              <p className="text-sm font-medium">What this section will cover later</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Plan details, billing history, and subscription settings will live here when those features are ready.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

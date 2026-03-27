@@ -54,9 +54,9 @@ const SignUpForm = () => {
         className="flex flex-col gap-6"
       >
         <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-2xl font-bold">Sign up to Acme Inc.</h1>
+          <h1 className="text-2xl font-bold">Create your Spendly account</h1>
           <p className="text-balance text-sm text-muted-foreground">
-            Fill information below to sign up
+            Start tracking your money in a calm, organized workspace.
           </p>
         </div>
         <div className="grid gap-6">
@@ -80,7 +80,7 @@ const SignUpForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="m@example.com" {...field} />
+                  <Input placeholder="example@gmail.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,7 +93,7 @@ const SignUpForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <Input placeholder="Create a secure password" type="password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

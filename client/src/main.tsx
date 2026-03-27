@@ -3,11 +3,11 @@ import { createRoot } from "react-dom/client";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import "./index.css";
 import App from "./App.tsx";
-import { Toaster } from "sonner";
 import { Provider } from "react-redux";
 import { store } from "./app/store.ts";
 import { persistor } from "./app/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
+import { Toaster } from "./components/ui/sonner.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")!).render(
           <App />
         </NuqsAdapter>
         <Toaster
-          position="top-center"
+          position="bottom-right"
           expand={true}
           duration={5000}
           richColors

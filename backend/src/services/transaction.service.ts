@@ -1,8 +1,16 @@
 import axios from "axios";
+import { z } from "zod";
 import TransactionModel, {
+  PaymentMethodEnum,
   TransactionTypeEnum,
 } from "../models/transaction.model";
-import { BadRequestException, NotFoundException } from "../utils/app-error";
+import { HTTPSTATUS } from "../config/http.config";
+import {
+  BadRequestException,
+  HttpException,
+  InternalServerException,
+  NotFoundException,
+} from "../utils/app-error";
 import { calculateNextOccurrence } from "../utils/helper";
 import {
   CreateTransactionType,
@@ -11,6 +19,42 @@ import {
 import { genAI, genAIModel } from "../config/google-ai.config";
 import { createPartFromBase64, createUserContent } from "@google/genai";
 import { receiptPrompt } from "../utils/prompt";
+
+const aiReceiptSchema = z.object({
+  title: z.string().trim().min(1).optional(),
+  amount: z.number().positive("Amount must be a positive number"),
+  date: z.string().date("Date must be in YYYY-MM-DD format"),
+  description: z.string().trim().min(1).max(500).optional(),
+  category: z.string().trim().min(1).optional(),
+  paymentMethod: z.nativeEnum(PaymentMethodEnum).optional(),
+  type: z.literal(TransactionTypeEnum.EXPENSE).default(TransactionTypeEnum.EXPENSE),
+});
+
+const getAIServiceError = (error: unknown) => {
+  const status =
+    (error as { status?: number })?.status ||
+    (error as { response?: { status?: number } })?.response?.status;
+  const message =
+    (error as { message?: string })?.message ||
+    (error as { error?: { message?: string } })?.error?.message ||
+    "AI service request failed";
+
+  if (status === HTTPSTATUS.TOO_MANY_REQUESTS || /quota exceeded|too many requests/i.test(message)) {
+    return new HttpException(
+      "AI receipt scanning is temporarily unavailable because the configured Gemini quota has been exceeded. Add billing to the Gemini project or use another API key, then try again.",
+      HTTPSTATUS.TOO_MANY_REQUESTS
+    );
+  }
+
+  if (/api key|permission|unauthorized|forbidden/i.test(message)) {
+    return new HttpException(
+      "AI receipt scanning is not configured correctly. Check GEMINI_API_KEY and Gemini API access.",
+      HTTPSTATUS.SERVICE_UNAVAILABLE
+    );
+  }
+
+  return new InternalServerException("Receipt scanning service unavailable");
+};
 
 export const createTransactionService = async (
   body: CreateTransactionType,
@@ -266,17 +310,17 @@ export const scanReceiptService = async (
 ) => {
   if (!file) throw new BadRequestException("No file uploaded");
 
+  if (!file.path) throw new BadRequestException("Failed to upload receipt");
+
   try {
-    if (!file.path) throw new BadRequestException("failed to upload file");
-
-    console.log(file.path);
-
-    const responseData = await axios.get(file.path, {
+    const responseData = await axios.get<ArrayBuffer>(file.path, {
       responseType: "arraybuffer",
     });
     const base64String = Buffer.from(responseData.data).toString("base64");
 
-    if (!base64String) throw new BadRequestException("Could not process file");
+    if (!base64String) {
+      throw new BadRequestException("Could not process receipt image");
+    }
 
     const result = await genAI.models.generateContent({
       model: genAIModel,
@@ -293,31 +337,44 @@ export const scanReceiptService = async (
       },
     });
 
-    const response = result.text;
-    const cleanedText = response?.replace(/```(?:json)?\n?/g, "").trim();
+    const cleanedText = result.text?.replace(/```(?:json)?\n?/g, "").trim();
 
-    if (!cleanedText)
-      return {
-        error: "Could not read reciept  content",
-      };
-
-    const data = JSON.parse(cleanedText);
-
-    if (!data.amount || !data.date) {
-      return { error: "Reciept missing required information" };
+    if (!cleanedText) {
+      throw new BadRequestException(
+        "The AI scan could not read details from this receipt"
+      );
     }
+
+    const parsedJson = JSON.parse(cleanedText);
+    const data = aiReceiptSchema.parse(parsedJson);
 
     return {
       title: data.title || "Receipt",
       amount: data.amount,
       date: data.date,
-      description: data.description,
-      category: data.category,
-      paymentMethod: data.paymentMethod,
+      description: data.description || "",
+      category: data.category || "other",
+      paymentMethod: data.paymentMethod || PaymentMethodEnum.CASH,
       type: data.type,
       receiptUrl: file.path,
     };
   } catch (error) {
-    return { error: "Reciept scanning  service unavailable" };
+    if (error instanceof z.ZodError) {
+      throw new BadRequestException(
+        "The AI scan returned incomplete receipt details. Try a clearer image."
+      );
+    }
+
+    if (error instanceof BadRequestException) {
+      throw error;
+    }
+
+    if (error instanceof SyntaxError) {
+      throw new BadRequestException(
+        "The AI scan returned an unreadable response. Please try again."
+      );
+    }
+
+    throw getAIServiceError(error);
   }
 };

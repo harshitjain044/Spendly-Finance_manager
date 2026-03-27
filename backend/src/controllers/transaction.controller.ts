@@ -155,7 +155,7 @@ export const scanReceiptController = asyncHandler(
     const result = await scanReceiptService(file);
 
     return res.status(HTTPSTATUS.OK).json({
-      message: "Reciept scanned successfully",
+      message: "Receipt scanned successfully",
       data: result,
     });
   }
